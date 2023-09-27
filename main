@@ -1,0 +1,58 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+public class Lab2 {
+    public static void main(String[] args) {
+        String inputFilePath = "input2.txt";
+        String outputFilePath = "output2.txt";
+        double initialCoordinate, finalCoordinate, step;
+        try (BufferedReader br = new BufferedReader(new FileReader(inputFilePath))) {
+            String line = br.readLine();
+            String[] values = line.split(" ");
+            initialCoordinate = Double.parseDouble(values[0]);
+            finalCoordinate = Double.parseDouble(values[1]);
+            step = Double.parseDouble(values[2]);
+        } catch (IOException e) {
+            System.err.println("Ошибка чтения файла входных данных: " + e.getMessage());
+            return;
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(outputFilePath))) {
+            bw.write("x     y");
+            bw.newLine();
+            double x = initialCoordinate;
+            while (x <= finalCoordinate) {
+                double y = interpolateNewtonForward(x);
+                bw.write(x + "   " + y);
+                bw.newLine();
+                x += step;
+            }
+        } catch (IOException e) {
+            System.err.println("Ошибка записи файла выходных данных: " + e.getMessage());
+        }
+        System.out.println("Программа успешно завершена!");
+    }
+
+    private static double interpolateNewtonForward(double x) {
+        double[] xValues = {0.0, 1.0, 2.0, 3.0};
+        double[] yValues = {0.0, 1.0, 4.0, 9.0};
+        int n = xValues.length;
+        double[] forwardDifferences = new double[n];
+        System.arraycopy(yValues, 0, forwardDifferences, 0, n);
+        for (int i = 1; i < n; i++) {
+            for (int j = n - 1; j >= i; j--) {
+                forwardDifferences[j] = forwardDifferences[j] - forwardDifferences[j - 1];
+            }
+        }
+        double result = forwardDifferences[0];
+        double product = 1.0;
+        for (int i = 1; i < n; i++) {
+            product *= (x - xValues[i - 1]) / (i * 1.0);
+            result += forwardDifferences[i] * product;
+        }
+        return result;
+    }
+}
